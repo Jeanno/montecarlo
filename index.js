@@ -102,7 +102,7 @@ class TicTacToe extends Game {
 
     printBoard () {
         const s = this.state;
-        const sts = this._stateToSign;
+        const sts = TicTacToe._stateToSign;
         for (let i = 0; i < 3; i++) {
             const head = i * 3;
             const a = s[head];
@@ -185,22 +185,5 @@ class RandomPlayer extends Player {
 }
 
 const game = new TicTacToe;
-const gameController = new TicTacToeController(game, new RandomPlayer, new HumanPlayer);
+const gameController = new TicTacToeController(game, new BeepBoopPlayer, new RandomPlayer);
 gameController.start();
-/*
-game.printBoard();
-game.applyMove(0);
-game.printBoard();
-game.applyMove(4);
-game.printBoard();
-game.applyMove(8);
-game.printBoard();
-game.applyMove(2);
-game.printBoard();
-game.applyMove(6);
-game.printBoard();
-game.applyMove(3);
-game.printBoard();
-game.applyMove(7);
-game.printBoard();
-*/
