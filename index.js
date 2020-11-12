@@ -1,3 +1,8 @@
+const readline = require("readline");
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 class Game {
     currentStateHash () {
@@ -16,25 +21,20 @@ class Game {
     }
 }
 
-class Agent {
-    suggestNextMove() {
-    }
-}
-
 class TicTacToe extends Game {
+    static _stateToSign = ["_", "O", "X"];
     constructor() {
         super();
         this.state = Array(9).fill(0);
         this.turn = 0;
         this.score = 0; // 1 => O wins; -1 => X wins;
-        this._stateToSign = ["_", "O", "X"];
     }
 
     possibleMoves () {
         const result = [];
-        for (let i = 0; i < this.state.legnth; i++) {
+        for (let i = 0; i < this.state.length; i++) {
             if (this.state[i] === 0) {
-                ret.push(i);
+                result.push(i);
             }
         }
         return result;
@@ -93,7 +93,7 @@ class TicTacToe extends Game {
     }
 
     isEnd () {
-        return this.score !== 0;
+        return this.score !== 0 | this.turn >= 9;
     }
 
     evaluatedScore () {
@@ -114,7 +114,80 @@ class TicTacToe extends Game {
     }
 }
 
-let game = new TicTacToe;
+class TicTacToeController {
+    constructor (game, player1, player2) {
+        this.game = game;
+        this.player1 = player1;
+        this.player2 = player2;
+        this.player1.setGame(game);
+        this.player2.setGame(game);
+    }
+
+    start () {
+        this._promptNextMove();
+    }
+
+    _promptNextMove () {
+        if ((this.game.turn % 2) === 0) {
+            this.player1.promptMove(this._applyMove.bind(this));
+        } else {
+            this.player2.promptMove(this._applyMove.bind(this));
+        }
+    }
+
+    _applyMove (move) {
+        this.game.applyMove(move);
+        if (this.game.isEnd()) {
+            this.game.printBoard();
+            console.log(this.game.score);
+        } else {
+            this._promptNextMove();
+        }
+    }
+}
+
+class Player {
+    constructor () {
+        this.game = null;
+    }
+
+    setGame (game) {
+        this.game = game;
+    }
+    promptMove (callback) {}
+}
+
+
+class HumanPlayer extends Player {
+    promptMove (callback) {
+        this.game.printBoard();
+        console.log(this.game.possibleMoves());
+        rl.question("Move:", (move) => {
+            callback(Number(move));
+        });
+    }
+}
+
+class BeepBoopPlayer extends Player {
+    promptMove (callback) {
+        let pm = this.game.possibleMoves();
+        let move = pm[Math.floor(Math.random() * pm.length)];
+        callback(move);
+    }
+}
+
+class RandomPlayer extends Player {
+    promptMove (callback) {
+        let pm = this.game.possibleMoves();
+        let move = pm[Math.floor(Math.random() * pm.length)];
+        callback(move);
+    }
+}
+
+const game = new TicTacToe;
+const gameController = new TicTacToeController(game, new RandomPlayer, new HumanPlayer);
+gameController.start();
+/*
 game.printBoard();
 game.applyMove(0);
 game.printBoard();
@@ -130,4 +203,4 @@ game.applyMove(3);
 game.printBoard();
 game.applyMove(7);
 game.printBoard();
-console.log(game.score);
+*/
