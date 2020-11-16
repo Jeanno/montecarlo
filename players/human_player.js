@@ -10,7 +10,7 @@ class HumanPlayer extends Player {
     promptMove (callback) {
         this.game.printBoard();
         console.log(this.game.possibleMoves());
-        rl.question("Move:", (move) => {
+        rl.question("Move: ", (move) => {
             callback(Number(move));
         });
     }

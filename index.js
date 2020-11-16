@@ -157,6 +157,168 @@ class TicTacToeController {
     }
 }
 
-const game = new TicTacToe;
+class Gomoku extends Game {
+    static _stateToSign = ["_", "O", "X"];
+    static _lengthToWin = 3;
+    constructor(width) {
+        super();
+        this.width = width;
+        const size = width * width;
+        this.state = Array(size).fill(0);
+        this.turn = 0;
+        this.score = 0; // 1 => O wins; -1 => X wins;
+    }
+
+    stateHash () {
+        return this.state.join("");
+    }
+
+    possibleMoves () {
+        const result = [];
+        for (let i = 0; i < this.state.length; i++) {
+            if (this.state[i] === 0) {
+                result.push(i);
+            }
+        }
+        return result;
+    }
+
+    _setScoreWithWinner (winner) {
+        this.score = winner * -2 + 3
+    }
+
+    _checkWin(move) {
+        const piece = (this.turn % 2) + 1; // O piece is 1; X piece is 2;
+        const s = this.state;
+        const size = this.width * this.width;
+
+        {
+            // Check vertical
+            let count = 0;
+            let idx = move;
+            while (idx >= 0 && s[idx] === piece) {
+                count++;
+                idx -= this.width;
+            }
+            idx = move + this.width;
+            while (idx < size && s[idx] === piece) {
+                count++;
+                idx += this.width;
+            }
+            if (count >= Gomoku._lengthToWin) {
+                this._setScoreWithWinner(piece);
+                return;
+            }
+        }
+
+        {
+            // Check horizontal
+            let count = 0;
+            let idx = move;
+            const left = idx - (idx % this.width);
+            const right = left + this.width;
+            while (idx >= left && s[idx] === piece) {
+                count++;
+                idx--;
+            }
+            idx = move + 1;
+            while (idx < right && s[idx] === piece) {
+                count++;
+                idx++;
+            }
+            if (count >= Gomoku._lengthToWin) {
+                this._setScoreWithWinner(piece);
+                return;
+            }
+        }
+
+        {
+            // Check top left to bottom right
+            let count = 0;
+            let idx = move;
+            const left = Math.max(0, idx - (idx % this.width) * (this.width + 1));
+            const right = Math.min(size, idx + (this.width - (idx % this.width) - 1) * (this.width + 1) + 1);
+            while (idx >= left && s[idx] === piece) {
+                count++;
+                idx -= this.width + 1;
+            }
+            idx = move + this.width + 1;
+            while (idx < right && s[idx] === piece) {
+                count++;
+                idx += this.width + 1;
+            }
+            if (count >= Gomoku._lengthToWin) {
+                this._setScoreWithWinner(piece);
+                return;
+            }
+        }
+
+        {
+            // Check top right to bottom left 
+            let count = 0;
+            let idx = move;
+            const left = Math.max(0, idx - (this.width - (idx % this.width) - 1) * (this.width - 1));
+            const right = Math.min(size, idx + (idx % this.width) * (this.width - 1) + 1);
+            while (idx >= left && s[idx] === piece) {
+                count++;
+                idx -= this.width - 1;
+            }
+            idx = move + this.width - 1;
+            while (idx < right && s[idx] === piece) {
+                count++;
+                idx += this.width - 1;
+            }
+            if (count >= Gomoku._lengthToWin) {
+                this._setScoreWithWinner(piece);
+                return;
+            }
+        }
+    }
+    
+    applyMove (move) {
+        const piece = (this.turn % 2) + 1; // O piece is 1; X piece is 2;
+        const s = this.state;
+        console.assert(s[move] === 0, "Illegal Move: " + move);
+        s[move] = piece;
+        this._checkWin(move);
+        this.turn++;
+    }
+
+    isEnd () {
+        return this.score !== 0 | this.turn >= this.width * this.width;
+    }
+
+    evaluatedScore () {
+        return this.score;
+    }
+
+    printBoard () {
+        const s = this.state;
+        const sts = Gomoku._stateToSign;
+        for (let i = 0; i < this.width; i++) {
+            const head = i * this.width;
+            const row = [];
+            for (let j = 0; j < this.width; j++) {
+                row.push(sts[s[head + j]]);
+            }
+            console.log(row.join());
+        }
+        console.log();
+    }
+
+    clone () {
+        const ret = new Gomoku(this.width);
+        ret.state = this.state.slice();
+        ret.turn = this.turn;
+        ret.score = this.score;
+        return ret;
+    }
+}
+
+const game = new Gomoku(4);
+//game.applyMove(7);
+//game.applyMove(2);
+//game.applyMove(13);
+//game.printBoard();
 const gameController = new TicTacToeController(game, new BeepBoopPlayer, new HumanPlayer);
 gameController.start();

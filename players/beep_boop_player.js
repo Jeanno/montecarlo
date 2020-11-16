@@ -3,10 +3,12 @@ const Player = require("./player.js");
 class BeepBoopPlayer extends Player {
     constructor () {
         super();
+        this.steps = 0;
         this.stateToScore = {};
     }
 
     _bestMove () {
+        this.steps = 0;
         const pm = this.game.possibleMoves();
         let minDiff = 10000;
         let minScore;
@@ -34,9 +36,14 @@ class BeepBoopPlayer extends Player {
         if (hash in this.stateToScore) {
             return this.stateToScore[hash];
         }
+        this.steps++;
+        if (this.steps >= 10000000) {
+            console.log("Steps over limit", this.steps);
+            process.exit();
+        }
         const pm = game.possibleMoves();
         let minMod = isMin ? -1 : 1
-        let bestDiff = isMin ? Number.MAX_VALUE : Number.MIN_VALUE;
+        let bestDiff = isMin ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
         let bestScore;
         let bestMove;
         for (const move of pm) {
